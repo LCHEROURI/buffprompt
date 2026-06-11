@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS prompt_folder_mapping (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   prompt_id UUID REFERENCES prompts(id) ON DELETE CASCADE NOT NULL,
   folder_id UUID REFERENCES folders(id) ON DELETE CASCADE NOT NULL,
-  UNIQUE(prompt_id, folder_id)
+  UNIQUE(prompt_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_pfm_prompt_id ON prompt_folder_mapping(prompt_id);

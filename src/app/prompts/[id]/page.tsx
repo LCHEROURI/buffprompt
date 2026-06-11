@@ -30,7 +30,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useFolders } from "@/lib/store";
 import { exportPrompts, type ExportFormat } from "@/lib/export";
-import type { Prompt, PromptVersion, PromptScore } from "@/lib/types";
+import type { Prompt, PromptVersion, PromptScore, Project } from "@/lib/types";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowLeft,
@@ -52,6 +52,7 @@ import {
   BookmarkPlus,
   Download,
   FileDown,
+  FolderKanban,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -100,7 +101,20 @@ export default function PromptDetailPage() {
   const [moveFolderOpen, setMoveFolderOpen] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
+  const [projectOpen, setProjectOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [linkingProject, setLinkingProject] = useState(false);
   const { folders } = useFolders();
+
+  useEffect(() => {
+    async function loadProjects() {
+      const supabase = createClient();
+      const { data } = await supabase.from("projects").select("*").order("name");
+      setProjects(data || []);
+    }
+    loadProjects();
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -200,6 +214,23 @@ export default function PromptDetailPage() {
         .eq("prompt_id", params.id)
         .order("version_number", { ascending: false });
       setVersions(v || []);
+    }
+  }
+
+  async function handleLinkToProject() {
+    if (!prompt || !selectedProject) return;
+    setLinkingProject(true);
+    const supabase = createClient();
+    const { error } = await supabase.from("project_prompts").upsert(
+      { project_id: selectedProject, prompt_id: prompt.id },
+      { onConflict: "project_id, prompt_id" }
+    );
+    setLinkingProject(false);
+    if (error) { toast.error(error.message); }
+    else {
+      toast.success("Added to project!");
+      setProjectOpen(false);
+      setSelectedProject(null);
     }
   }
 
@@ -438,6 +469,34 @@ export default function PromptDetailPage() {
             <DropdownMenuItem onClick={() => handleExport("docx")}><FileDown className="mr-2 h-4 w-4" /> DOCX</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Dialog open={projectOpen} onOpenChange={setProjectOpen}>
+          <DialogTrigger>
+            <Button variant="outline" className="gap-2">
+              <FolderKanban className="h-4 w-4" />
+              Add to Project
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Add to Project</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <Select value={selectedProject || ""} onValueChange={(v) => v && setSelectedProject(v)}>
+                <SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.emoji} {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button className="w-full gap-2" onClick={handleLinkToProject} disabled={!selectedProject || linkingProject}>
+                {linkingProject ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderKanban className="h-4 w-4" />}
+                Add to Project
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={moveFolderOpen} onOpenChange={setMoveFolderOpen}>
           <DialogTrigger><Button variant="outline" className="gap-2"><FolderOpen className="h-4 w-4" /> Move To Folder</Button></DialogTrigger>
