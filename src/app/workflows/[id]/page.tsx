@@ -46,9 +46,8 @@ export default function WorkflowDetailPage() {
   const [runResults, setRunResults] = useState<Record<string, string>>({});
   const [currentStepIdx, setCurrentStepIdx] = useState(-1);
 
-  const supabase = createClient();
-
   async function loadData() {
+    const supabase = createClient();
     const { data: w } = await supabase.from("workflows").select("*").eq("id", params.id).single();
     setWorkflow(w);
     if (w) {
@@ -65,6 +64,7 @@ export default function WorkflowDetailPage() {
   async function addStep() {
     if (!newStepTitle.trim() || !newStepPrompt.trim()) { toast.error("Title and prompt are required"); return; }
     setAddingStep(true);
+    const supabase = createClient();
     const nextNum = steps.length + 1;
     const { error } = await supabase.from("workflow_steps").insert({
       workflow_id: params.id, step_number: nextNum, title: newStepTitle.trim(),
@@ -91,6 +91,7 @@ export default function WorkflowDetailPage() {
   async function handleEditStep() {
     if (!editStep || !editStepTitle.trim() || !editStepPrompt.trim()) return;
     setSavingEditStep(true);
+    const supabase = createClient();
     const { error } = await supabase.from("workflow_steps").update({
       title: editStepTitle.trim(), prompt_text: editStepPrompt, instructions: editStepInstructions || null,
     }).eq("id", editStep.id);
@@ -106,14 +107,10 @@ export default function WorkflowDetailPage() {
   }
 
   async function deleteStep(stepId: string) {
+    const supabase = createClient();
     await supabase.from("workflow_steps").delete().eq("id", stepId);
     const { data: s } = await supabase.from("workflow_steps").select("*").eq("workflow_id", params.id).order("step_number", { ascending: true });
-    // Renumber steps sequentially
-    const renumbered = (s || []).map((step: any, i: number) => ({
-      ...step,
-      step_number: i + 1,
-    }));
-    // Update step numbers in DB
+    const renumbered = (s || []).map((step: any, i: number) => ({ ...step, step_number: i + 1 }));
     for (const step of renumbered) {
       await supabase.from("workflow_steps").update({ step_number: step.step_number }).eq("id", step.id);
     }
@@ -131,7 +128,7 @@ export default function WorkflowDetailPage() {
     [reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]];
     const updated = reordered.map((s, i) => ({ ...s, step_number: i + 1 }));
 
-    // Persist new step numbers
+    const supabase = createClient();
     for (const s of updated) {
       await supabase.from("workflow_steps").update({ step_number: s.step_number }).eq("id", s.id);
     }
@@ -167,7 +164,7 @@ export default function WorkflowDetailPage() {
     setRunResults({});
     setCurrentStepIdx(-1);
 
-    // Create a workflow run record
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const { data: runRecord } = await supabase.from("workflow_runs").insert({
       workflow_id: params.id, user_id: user?.id, status: "running",

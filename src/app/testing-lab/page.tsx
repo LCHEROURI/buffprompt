@@ -114,9 +114,8 @@ export default function TestingLabPage() {
   // Delete state
   const [savingDelete, setSavingDelete] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   async function loadData() {
+    const supabase = createClient();
     const { data: t } = await supabase.from("test_labs").select("*").order("created_at", { ascending: false });
     setTests(t || []);
     const { data: r } = await supabase.from("test_lab_results").select("*").order("created_at", { ascending: false });
@@ -205,6 +204,7 @@ export default function TestingLabPage() {
       return;
     }
     setSaving(true);
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
     const { error } = await supabase.from("test_labs").insert({
@@ -238,6 +238,7 @@ export default function TestingLabPage() {
   async function handleEdit() {
     if (!editTest || !editName.trim() || !editPromptA.trim() || !editPromptB.trim()) return;
     setSavingEdit(true);
+    const supabase = createClient();
     const { error } = await supabase.from("test_labs").update({
       name: editName.trim(),
       description: editDescription || null,
@@ -258,6 +259,7 @@ export default function TestingLabPage() {
   async function handleDelete(testId: string, testName: string) {
     if (!confirm(`Delete test "${testName}"? All results will be removed.`)) return;
     setSavingDelete(testId);
+    const supabase = createClient();
     const { error } = await supabase.from("test_labs").delete().eq("id", testId);
     setSavingDelete(null);
     if (error) { toast.error(error.message); }
@@ -286,6 +288,7 @@ export default function TestingLabPage() {
       };
     });
 
+    const supabase = createClient();
     const { error } = await supabase.from("test_lab_results").insert(inserts);
     setRunningTests((prev) => {
       const next = new Set(prev);
@@ -303,6 +306,7 @@ export default function TestingLabPage() {
 
   async function handleClearResults(testId: string) {
     if (!confirm("Clear all results for this test?")) return;
+    const supabase = createClient();
     const { error } = await supabase.from("test_lab_results").delete().eq("test_id", testId);
     if (error) { toast.error(error.message); }
     else {

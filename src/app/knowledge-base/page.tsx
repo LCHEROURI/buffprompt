@@ -80,9 +80,8 @@ export default function KnowledgeBasePage() {
   // Delete state
   const [savingDelete, setSavingDelete] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   async function loadFiles() {
+    const supabase = createClient();
     const { data } = await supabase.from("knowledge_files").select("*").order("created_at", { ascending: false });
     setFiles(data || []);
     setLoading(false);
@@ -122,6 +121,7 @@ export default function KnowledgeBasePage() {
   async function handleUploadAndAdd() {
     if (!addName.trim()) { toast.error("File name is required"); return; }
     setAdding(true);
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setAdding(false); return; }
 
@@ -183,6 +183,7 @@ export default function KnowledgeBasePage() {
   async function handleEdit() {
     if (!editFile || !editName.trim()) return;
     setSavingEdit(true);
+    const supabase = createClient();
     const { error } = await supabase
       .from("knowledge_files")
       .update({
@@ -205,6 +206,7 @@ export default function KnowledgeBasePage() {
   async function handleDelete(fileId: string, fileName: string) {
     if (!confirm(`Delete "${fileName}"? This action cannot be undone.`)) return;
     setSavingDelete(fileId);
+    const supabase = createClient();
     const { error } = await supabase.from("knowledge_files").delete().eq("id", fileId);
     setSavingDelete(null);
     if (error) { toast.error(error.message); }

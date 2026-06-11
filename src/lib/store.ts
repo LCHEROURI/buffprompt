@@ -9,9 +9,8 @@ export function usePrompts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   const fetchPrompts = useCallback(async () => {
+    const supabase = createClient();
     setLoading(true);
     const { data, error } = await supabase
       .from("prompts")
@@ -31,9 +30,9 @@ export function usePrompts() {
 export function useFolders() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   const fetchFolders = useCallback(async () => {
+    const supabase = createClient();
     const { data } = await supabase
       .from("folders")
       .select("*")
@@ -49,9 +48,9 @@ export function useFolders() {
 
 export function useFolderMappings() {
   const [mappings, setMappings] = useState<PromptFolderMapping[]>([]);
-  const supabase = createClient();
 
   const fetchMappings = useCallback(async () => {
+    const supabase = createClient();
     const { data } = await supabase.from("prompt_folder_mapping").select("*");
     setMappings(data || []);
   }, []);
