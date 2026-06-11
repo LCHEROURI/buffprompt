@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Prompt Vault Pro",
+  title: "Buffprompt",
   description:
     "Your single source of truth for AI prompt management. Store, organize, search, and reuse your best prompts.",
 };

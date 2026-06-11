@@ -53,7 +53,7 @@ export function AppHeader({ userEmail, userName }: AppHeaderProps) {
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
           <Sparkles className="h-3.5 w-3.5 text-white" />
         </div>
-        <span className="text-sm font-semibold">Prompt Vault</span>
+        <span className="text-sm font-semibold">Buffprompt</span>
       </Link>
 
       <div className="flex-1" />

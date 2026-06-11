@@ -53,7 +53,7 @@ export function AppSidebar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
           <Sparkles className="h-4 w-4 text-white" />
         </div>
-        <span className="text-lg font-semibold tracking-tight">Prompt Vault</span>
+        <span className="text-lg font-semibold tracking-tight">Buffprompt</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">
