@@ -45,9 +45,8 @@ export default function WorkflowsPage() {
   // Delete state
   const [savingDelete, setSavingDelete] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   async function loadData() {
+    const supabase = createClient();
     const { data: w } = await supabase.from("workflows").select("*").order("created_at", { ascending: false });
     setWorkflows(w || []);
 
@@ -90,6 +89,7 @@ export default function WorkflowsPage() {
   async function handleCreate() {
     if (!name.trim()) return;
     setCreating(true);
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setCreating(false); router.push("/login"); return; }
     const { data, error } = await supabase.from("workflows").insert({
@@ -116,6 +116,7 @@ export default function WorkflowsPage() {
   async function handleEdit() {
     if (!editWorkflow || !editName.trim()) return;
     setSavingEdit(true);
+    const supabase = createClient();
     const { error } = await supabase.from("workflows").update({
       name: editName.trim(), description: editDescription || null,
     }).eq("id", editWorkflow.id);
@@ -132,6 +133,7 @@ export default function WorkflowsPage() {
   async function handleDelete(wfId: string, wfName: string) {
     if (!confirm(`Delete workflow "${wfName}"? All steps and run history will be removed.`)) return;
     setSavingDelete(wfId);
+    const supabase = createClient();
     const { error } = await supabase.from("workflows").delete().eq("id", wfId);
     setSavingDelete(null);
     if (error) { toast.error(error.message); }
